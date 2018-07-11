@@ -9,6 +9,8 @@ import java.io.Serializable;
  * @date create in 10:41 2018/7/9
  */
 public class Response implements Serializable{
+
+    private String requestId;
     private int code;
     private Object result;
 
@@ -26,5 +28,13 @@ public class Response implements Serializable{
 
     public void setResult(Object result) {
         this.result = result;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 }

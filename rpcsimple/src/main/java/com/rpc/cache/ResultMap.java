@@ -3,6 +3,7 @@ package com.rpc.cache;
 import com.rpc.transport.Response;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Demo class
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date create in 16:39 2018/7/10
  */
 public class ResultMap {
+
     private static ConcurrentHashMap<String,Response> resultMap = new ConcurrentHashMap<>();
 
     public static ConcurrentHashMap<String,Response> getMap(){

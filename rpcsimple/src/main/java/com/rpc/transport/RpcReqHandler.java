@@ -5,6 +5,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 业务处理类
@@ -14,7 +15,7 @@ import java.util.Map;
  */
 public class RpcReqHandler extends SimpleChannelInboundHandler {
     private Map rpcService;
-
+    private AtomicInteger sum = new AtomicInteger(0);
     public RpcReqHandler(Map rpcService) {
         this.rpcService = rpcService;
     }
@@ -26,10 +27,12 @@ public class RpcReqHandler extends SimpleChannelInboundHandler {
             Object obj = rpcService.get(req.getClassName());
             Method method = Class.forName(req.getClassName()).getMethod(req.getMethod(), req.getClasses());
             Response res = new Response();
+            res.setRequestId(req.getRequestId());
             res.setCode(200);
             res.setResult(method.invoke(obj, req.getArgs()));
             channelHandlerContext.writeAndFlush(res);
         }
+        System.out.println(sum.incrementAndGet());
     }
 
     @Override
