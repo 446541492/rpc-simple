@@ -28,6 +28,10 @@ public class NettyClient implements ApplicationContextAware {
      * @throws InterruptedException
      */
     public Response send(Request req) throws Exception {
+        //如果管道没有被开启或者被关闭了，那么重连
+        if(null == channel || !channel.isActive()){
+            initChannel();
+        }
         CountDownLatch latch = new CountDownLatch(1);
         ChannelUtils.putCallback2DataMap(channel,req.getRequestId(),latch);
         channel.writeAndFlush(req).sync();//sync()
@@ -39,6 +43,10 @@ public class NettyClient implements ApplicationContextAware {
      * 建立一个长连接
      */
     public NettyClient() {
+        initChannel();
+    }
+
+    private void initChannel(){
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
@@ -65,7 +73,6 @@ public class NettyClient implements ApplicationContextAware {
             e.printStackTrace();
         }
     }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
