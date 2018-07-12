@@ -21,10 +21,10 @@
         </plugins>
     </build>
     <modules>
-        <module>rpc-client</module>
-        <module>rpc-server</module>
-        <module>rpcsimple</module>
-        <module>service</module>
+        <module>demo-client</module>
+        <module>demo-server</module>
+        <module>rpc-framework</module>
+        <module>demo-service</module>
     </modules>
 
     <dependencies>

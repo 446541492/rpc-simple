@@ -10,17 +10,17 @@ import java.io.Serializable;
  */
 public class Request implements Serializable {
     private String requestId;
-    private String ClassName;
+    private String className;
     private String method;
     private Object[] args;
     private Class[] classes;
 
     public String getClassName() {
-        return ClassName;
+        return className;
     }
 
     public void setClassName(String className) {
-        ClassName = className;
+        this.className = className;
     }
 
     public String getMethod() {

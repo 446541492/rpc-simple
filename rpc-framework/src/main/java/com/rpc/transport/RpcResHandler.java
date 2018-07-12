@@ -1,14 +1,12 @@
 package com.rpc.transport;
 
 import com.rpc.cache.ResultMap;
-import com.rpc.lock.Lock;
 import com.rpc.utils.ChannelUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Demo class

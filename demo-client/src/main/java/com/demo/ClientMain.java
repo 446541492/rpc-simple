@@ -3,14 +3,12 @@ package com.demo;
 import com.demo.service.HelloService;
 import com.rpc.proxy.JdkProxy;
 import com.rpc.transport.NettyClient;
-import io.netty.util.internal.ConcurrentSet;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
