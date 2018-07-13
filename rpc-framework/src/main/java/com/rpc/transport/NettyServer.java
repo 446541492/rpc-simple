@@ -43,10 +43,13 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup();//线程组：用来处理网络事件处理（接受客户端连接）
-        EventLoopGroup workerGroup = new NioEventLoopGroup();//线程组：用来进行网络通讯读写
+        EventLoopGroup bossGroup = new NioEventLoopGroup();//事件轮询线程组：用来处理网络事件处理（接受客户端连接）
+        EventLoopGroup workerGroup = new NioEventLoopGroup();//事件轮询线程组：用来进行网络通讯读写
         try {
             //ServerBootstrap是一个帮助类，用于设置服务器。
+            //一个 ServerBootstrap 可以认为有2个 Channel 集合，第一个集合包含一个单例 ServerChannel，代表持有一个绑定了本地端口的 socket；
+            // 第二集合包含所有创建的 Channel，处理服务器所接收到的客户端进来的连接socket。
+            //与 ServerChannel 相关 EventLoopGroup 分配一个 EventLoop 是 负责创建 Channels 用于传入的连接请求。一旦连接接受，第二个EventLoopGroup 分配一个 EventLoop 给它的 Channel。
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)////注册服务端channel，指定使用NioServerSocketChannel类来实例化。
@@ -61,24 +64,24 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
                     //设置日志
                     .handler(new LoggingHandler(LogLevel.DEBUG))
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childHandler(new ChannelInitializer<SocketChannel>() //ChannelInitializer是一个特殊的处理程序，旨在帮助用户配置新的Channel
-                    {
+                    //当一个新的连接被接受，一个新的子 Channel 将被创建， ChannelInitializer 会添加我们Handler 的实例到 Channel 的 ChannelPipeline。
+                    // 正如我们如前所述，如果有入站信息，这个处理器将被通知。
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel channel) throws Exception {
-                            channel.pipeline()
-                                    //upstream event是被Upstream Handler们自底向上逐个处理，Inbound
-                                    // downstream event是被Downstream Handler们自顶向下逐个处理， Outbound
-                                    // 这里的上下关系就是向ChannelPipeline里添加Handler的先后顺序关系。
-                                    // 简单的理 解，upstream event是处理来自外部的请求的过程，而downstream event是处理向外发送请求的过程。
-                                    //编解码操作,要传输对象，必须编解码
-                                    .addLast(new RpcDecoder()) // 将 RPC 请求进行解码（为了处理请求）
-                                    .addLast(new RpcEncoder()) // 将 RPC 响应进行编码（为了返回响应）
+                            channel.pipeline()//pipeline 是 handler的容器
+                                    //Netty 中有两个方向的数据流，入站(ChannelInboundHandler)和出站(ChannelOutboundHandler)之间有一个明显的区别：
+                                    // 若数据是从用户应用程序到远程主机则是“出站(outbound)”，相反若数据时从远程主机到用户应用程序则是“入站(inbound)”。
+                                    //为了使数据从一端到达另一端，一个或多个 ChannelHandler 将以某种方式操作数据。这些 ChannelHandler 会在程序的“引导”阶段被添加ChannelPipeline中，
+                                    // 并且被添加的顺序将决定处理数据的顺序。
+                                    .addLast(new RpcDecoder()) // 入站消息将从字节转为一个Java对象;也就是说，“解码”
+                                    .addLast(new RpcEncoder()) // 出站相反会发生：“编码”，从一个Java对象转为字节。其原因是简单的：网络数据是一系列字节，因此需要从那类型进行转换。
                                     .addLast(new ReadTimeoutHandler(5))//超时handler 5s没有交互，就会关闭channel
                                     .addLast(new RpcReqHandler(rpcService)); // 业务处理类
                         }
                     });
             int port = Integer.valueOf(ConfigProperties.getRpcPort());
-            //ChannelFuture表示尚未发生的I/O操作。这意味着任何请求的操作可能尚未执行，因为所有操作在Netty中都是异步的。
+
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("netty start port:" + ConfigProperties.getRpcPort());
             future.channel().closeFuture().sync();

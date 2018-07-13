@@ -21,20 +21,22 @@ import java.util.concurrent.CountDownLatch;
  */
 public class NettyClient implements ApplicationContextAware {
     public Channel channel;
+
     /**
      * 客户端长连接并使用连接池，channel可能复用，发送数据和接受数据异步
+     *
      * @param req
      * @return
      * @throws InterruptedException
      */
     public Response send(Request req) throws Exception {
         //如果管道没有被开启或者被关闭了，那么重连
-        if(null == channel || !channel.isActive()){
+        if (null == channel || !channel.isActive()) {
             initChannel();
         }
         CountDownLatch latch = new CountDownLatch(1);
-        ChannelUtils.putCallback2DataMap(channel,req.getRequestId(),latch);
-        channel.writeAndFlush(req).sync();//sync()
+        ChannelUtils.putCallback2DataMap(channel, req.getRequestId(), latch);
+        channel.writeAndFlush(req);//sync()
         latch.await();
         return ResultMap.getMap().remove(req.getRequestId());
     }
@@ -46,7 +48,7 @@ public class NettyClient implements ApplicationContextAware {
         initChannel();
     }
 
-    private void initChannel(){
+    private void initChannel() {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
@@ -61,18 +63,30 @@ public class NettyClient implements ApplicationContextAware {
                         }
                     })
                     .option(ChannelOption.SO_KEEPALIVE, true);
-            ChannelFuture future = bootstrap.connect("127.0.0.1", 8080).sync();
-            if (future.isSuccess()) {
-                channel = future.channel();
-                System.out.println("长连接客户端启动！");
-            }
-            //为刚刚创建的channel，初始化channel属性
-            ChannelUtils.initDataMap(channel);
-//            future.channel().closeFuture();//客户端长连接不主动关闭
+            //当调用 connect() 将会直接是非阻塞的，并且调用在背后完成。异步连接到远程对等节点。调用立即返回并提供 ChannelFuture
+            // 由于线程是非阻塞的，所以无需等待操作完成，而可以去干其他事，因此这令资源利用更高效。
+            ChannelFuture future = bootstrap.connect("127.0.0.1", 8080);
+            //当监听器被通知连接完成，我们检查状态。如果是成功，就写数据到 Channel，否则我们检索 ChannelFuture 中的Throwable。
+            future.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) {
+                    if (future.isSuccess()) {
+                        channel = future.channel();
+                        //为刚刚创建的channel，初始化channel属性
+                        ChannelUtils.initDataMap(channel);
+                    } else {
+                        Throwable cause = future.cause();
+                        cause.printStackTrace();
+                    }
+                }
+            });
+            System.out.println("长连接客户端启动！");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 

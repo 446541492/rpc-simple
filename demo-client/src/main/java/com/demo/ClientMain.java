@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -19,9 +20,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @SpringBootApplication
 public class ClientMain {
-    static int count = 10000;
-    static CountDownLatch countWait = new CountDownLatch(count);//并发计数器
+    static int reqCount = 10000;
+    static CountDownLatch countWait = new CountDownLatch(reqCount);//并发计数器
     static AtomicLong sumTime = new AtomicLong();
+    static AtomicInteger resCount = new AtomicInteger(0);
 
     @Bean
     public NettyClient nettyClient() {
@@ -42,9 +44,10 @@ public class ClientMain {
                 try {
                     countBegin.await();//当count!=0时,阻塞
                     Long start = System.currentTimeMillis();
-                    hello.say("hello ");
+                    hello.say("hello");
                     Long end = System.currentTimeMillis();
                     sumTime.addAndGet(end - start);
+                    resCount.incrementAndGet();
                 } catch (InterruptedException e) {
                     System.out.println(e.getMessage());
                 } finally {
@@ -53,7 +56,7 @@ public class ClientMain {
 
             }
         };
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < reqCount; i++) {
             new Thread(work).start();
         }
         countBegin.countDown();//
@@ -63,7 +66,7 @@ public class ClientMain {
             e.printStackTrace();
         }
 
-        System.out.println("平均耗时：" + (sumTime.longValue() / count));
+        System.out.println("发送请"+ reqCount +"收到"+ resCount +"平均耗时：" + (sumTime.longValue() / reqCount));
 
     }
 }
