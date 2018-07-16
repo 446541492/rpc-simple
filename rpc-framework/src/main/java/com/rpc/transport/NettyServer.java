@@ -76,7 +76,7 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
                                     // 并且被添加的顺序将决定处理数据的顺序。
                                     .addLast(new RpcDecoder()) // 入站消息将从字节转为一个Java对象;也就是说，“解码”
                                     .addLast(new RpcEncoder()) // 出站相反会发生：“编码”，从一个Java对象转为字节。其原因是简单的：网络数据是一系列字节，因此需要从那类型进行转换。
-                                    .addLast(new ReadTimeoutHandler(5))//超时handler 5s没有交互，就会关闭channel
+
                                     .addLast(new RpcReqHandler(rpcService)); // 业务处理类
                         }
                     });

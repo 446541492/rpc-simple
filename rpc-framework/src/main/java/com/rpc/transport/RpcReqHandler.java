@@ -53,7 +53,8 @@ public class RpcReqHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+        System.out.println("客户端断开链接");
+        ctx.close();
     }
 
     /**

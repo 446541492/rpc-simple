@@ -1,29 +1,38 @@
-//package com.rpc.bean;
-//
-//import com.demo.service.HelloService;
-//import com.rpc.proxy.JdkProxy;
-//import org.springframework.beans.BeansException;
-//import org.springframework.context.ApplicationContext;
-//import org.springframework.context.ApplicationContextAware;
-//
-///**
-// * Demo class
-// *
-// * @author wanglei
-// * @date create in 15:18 2018/7/10
-// */
-//public class RpcBean  implements ApplicationContextAware {
-//    @Override
-//    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-//        JdkProxy proxy = new JdkProxy(applicationContext);
-//        HelloService hello = proxy.createProxy(HelloService.class);
-//
-////        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
-////        beanFactory.applyBeanPostProcessorsAfterInitialization(hello, hello.getClass().getName());
-////        beanFactory.registerSingleton(hello.getClass().getName(), hello);
-//        System.out.println(hello.say("hello "));
-//        System.out.println(hello.say("hello1 "));
-//        System.out.println(hello.say("hello2 "));
-//        System.out.println(hello.say("hello3"));
-//    }
-//}
+package com.rpc.bean;
+
+import com.demo.service.HelloService;
+import com.rpc.proxy.MyProxyFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
+
+/**
+ * Demo class
+ *
+ * @author wanglei
+ * @date create in 15:18 2018/7/10
+ */
+public class RpcBean implements BeanDefinitionRegistryPostProcessor {
+
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+    }
+
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
+        // 需要被代理的接口
+        Class<?> cls = HelloService.class;
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(cls);
+        GenericBeanDefinition definition = (GenericBeanDefinition) builder.getRawBeanDefinition();
+        definition.getPropertyValues().add("interfaceClass", definition.getBeanClassName());
+        definition.setBeanClass(MyProxyFactory.class);
+        definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
+        // 注册bean名,一般为类名首字母小写
+        beanDefinitionRegistry.registerBeanDefinition("helloService", definition);
+    }
+
+}

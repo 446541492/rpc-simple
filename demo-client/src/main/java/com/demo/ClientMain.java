@@ -1,8 +1,9 @@
 package com.demo;
 
 import com.demo.service.HelloService;
-import com.rpc.proxy.JdkProxy;
+import com.rpc.bean.RpcBean;
 import com.rpc.transport.NettyClient;
+import com.rpc.utils.SpringContextUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @SpringBootApplication
 public class ClientMain {
-    static int reqCount = 10000;
+    static int reqCount = 1000;
     static CountDownLatch countWait = new CountDownLatch(reqCount);//并发计数器
     static AtomicLong sumTime = new AtomicLong();
     static AtomicInteger resCount = new AtomicInteger(0);
@@ -30,12 +31,15 @@ public class ClientMain {
         return new NettyClient();
     }
 
+    @Bean
+    public RpcBean rpcBean() {
+        return new RpcBean();
+    }
+
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(ClientMain.class, args);
-//        HelloService bean = (HelloService) context.getBean(HelloService.class.getName());
-//        bean.say("hello world!");
-        JdkProxy proxy = new JdkProxy(context);
-        HelloService hello = proxy.createProxy(HelloService.class);
+        SpringContextUtil.setContext(context);
+        HelloService hello = (HelloService) context.getBean("helloService");
         CountDownLatch countBegin = new CountDownLatch(1);
 
         Runnable work = new Runnable() {

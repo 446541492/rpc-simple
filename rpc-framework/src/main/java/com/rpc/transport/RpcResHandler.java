@@ -34,7 +34,7 @@ public class RpcResHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-        System.out.println("连接断开");
+        System.out.println("服务器断开链接");
+        ctx.close();
     }
 }

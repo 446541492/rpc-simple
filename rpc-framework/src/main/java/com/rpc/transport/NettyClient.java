@@ -1,15 +1,23 @@
 package com.rpc.transport;
 
+import com.demo.service.HelloService;
 import com.rpc.cache.ResultMap;
+import com.rpc.proxy.JdkProxy;
 import com.rpc.utils.ChannelUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -19,7 +27,7 @@ import java.util.concurrent.CountDownLatch;
  * @author wanglei
  * @date create in 11:31 2018/7/9
  */
-public class NettyClient implements ApplicationContextAware {
+public class NettyClient{
     public Channel channel;
 
     /**
@@ -59,6 +67,7 @@ public class NettyClient implements ApplicationContextAware {
                             channel.pipeline()
                                     .addLast(new RpcEncoder()) // 将 RPC 请求进行编码（为了发送请求）
                                     .addLast(new RpcDecoder()) // 将 RPC 响应进行解码（为了处理响应）
+                                    .addLast(new ReadTimeoutHandler(5))//超时handler 5s没有交互，就会关闭channel
                                     .addLast(new RpcResHandler()); // 使用 RpcClient 发送 RPC 请求
                         }
                     })
@@ -87,11 +96,5 @@ public class NettyClient implements ApplicationContextAware {
         }
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
-//        System.out.println(hello.say("hello1 "));
-//        System.out.println(hello.say("hello2 "));
-//        System.out.println(hello.say("hello3"));
-    }
 }

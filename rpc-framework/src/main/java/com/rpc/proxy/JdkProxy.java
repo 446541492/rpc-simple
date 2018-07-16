@@ -4,6 +4,7 @@ import com.rpc.cache.ResultMap;
 import com.rpc.transport.NettyClient;
 import com.rpc.transport.Request;
 import com.rpc.transport.Response;
+import com.rpc.utils.SpringContextUtil;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.InvocationHandler;
@@ -19,11 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date create in 16:37 2018/7/9
  */
 public class JdkProxy implements InvocationHandler {
-    private ApplicationContext applicationContext;
-
-    public JdkProxy(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
 
     public <T> T createProxy(Class<?> cls) {
         return (T) Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[]{cls}, this);
@@ -38,7 +34,7 @@ public class JdkProxy implements InvocationHandler {
         req.setArgs(args);
         req.setClasses(method.getParameterTypes());
         req.setMethod(method.getName());
-        NettyClient client = (NettyClient) applicationContext.getBean("nettyClient");
+        NettyClient client = SpringContextUtil.getContext().getBean(NettyClient.class);
         Response res = client.send(req);
         Object result = res.getResult();
         Long end = System.currentTimeMillis();
