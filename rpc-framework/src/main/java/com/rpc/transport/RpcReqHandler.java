@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 业务处理类
+ * 业务处理类  处理进站数据和所有状态更改事件
  * SimpleChannelInboundHandler vs. ChannelInboundHandler
- * 何时用这两个要看具体业务的需要。
+ * 建议SimpleChannelInboundHandler   因为需要尽快释放数据容器ByteBuf，Netty使用引用计数器来处理池化的 ByteBuf。所以当 ByteBuf 完全处理后，要确保引用计数器被调整。
  * SimpleChannelInboundHandler channelRead()会释放对 ByteBuf（保存信息） 的引用。
  * ChannelInboundHandlerAdapter 需要自己释放 ReferenceCountUtil.release(msg) 或者  writeAndFlush（msg）;
  *
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author wanglei
  * @date create in 10:51 2018/7/9
  */
-public class RpcReqHandler extends ChannelInboundHandlerAdapter {
+public class RpcReqHandler extends SimpleChannelInboundHandler {
     private Map rpcService;
 
 
@@ -41,11 +41,21 @@ public class RpcReqHandler extends ChannelInboundHandlerAdapter {
         super.channelActive(ctx);
     }
 
+    /**
+     *   channel 注册到一个 EventLoop. channel已创建但未注册到一个 EventLoop.
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
     }
 
+    /**
+     *   channel已创建但未注册到一个 EventLoop.
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         super.channelUnregistered(ctx);
@@ -77,14 +87,8 @@ public class RpcReqHandler extends ChannelInboundHandlerAdapter {
         super.channelWritabilityChanged(ctx);
     }
 
-    /**
-     *  每个信息入站都会调用
-     * @param channelHandlerContext
-     * @param o
-     * @throws Exception
-     */
     @Override
-    public void channelRead(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
         if (o instanceof Request) {
             Request req = (Request) o;
             Object obj = rpcService.get(req.getClassName());
@@ -93,8 +97,10 @@ public class RpcReqHandler extends ChannelInboundHandlerAdapter {
             res.setRequestId(req.getRequestId());
             res.setCode(200);
             res.setResult(method.invoke(obj, req.getArgs()));
-            //在 Netty 发送消息可以采用两种方式：直接写消息给 Channel 或者写入 ChannelHandlerContext 对象。
-            // 这两者主要的区别是， 前一种方法会导致消息从 ChannelPipeline的尾部开始，而后者导致消息从 ChannelPipeline 下一个处理器开始。
+            //Channel, ChannelPipeline .writeAndFlush(res)  或  channelHandlerContext.writeAndFlush(res);
+            // 这两者主要的区别是，
+            // 前一种方法会导致消息从 事件传递给 ChannelPipeline 的第一个 ChannelHandler，然后ChannelHandler 通过关联的 ChannelHandlerContext 传递事件给 ChannelPipeline 中的 下一个。
+            //后一种 ChannelHandlerContext 方法调用 事件发送到了下一个 ChannelHandler 经过最后一个ChannelHandler后，事件从 ChannelPipeline 移除
             channelHandlerContext.writeAndFlush(res);
         }
     }

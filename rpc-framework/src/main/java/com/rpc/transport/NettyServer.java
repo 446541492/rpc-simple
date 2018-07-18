@@ -73,10 +73,10 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
                                     //Netty 中有两个方向的数据流，入站(ChannelInboundHandler)和出站(ChannelOutboundHandler)之间有一个明显的区别：
                                     // 若数据是从用户应用程序到远程主机则是“出站(outbound)”，相反若数据时从远程主机到用户应用程序则是“入站(inbound)”。
                                     //为了使数据从一端到达另一端，一个或多个 ChannelHandler 将以某种方式操作数据。这些 ChannelHandler 会在程序的“引导”阶段被添加ChannelPipeline中，
-                                    // 并且被添加的顺序将决定处理数据的顺序。
+                                    // 注册两个InboundHandler，执行顺序为注册顺序，所以应该是InboundHandler1 InboundHandler2
+                                    // 注册两个OutboundHandler，执行顺序为注册顺序的逆序，所以应该是OutboundHandler2 OutboundHandler1
                                     .addLast(new RpcDecoder()) // 入站消息将从字节转为一个Java对象;也就是说，“解码”
                                     .addLast(new RpcEncoder()) // 出站相反会发生：“编码”，从一个Java对象转为字节。其原因是简单的：网络数据是一系列字节，因此需要从那类型进行转换。
-
                                     .addLast(new RpcReqHandler(rpcService)); // 业务处理类
                         }
                     });
