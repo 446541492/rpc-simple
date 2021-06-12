@@ -16,8 +16,7 @@ public class HelloImpl implements HelloService{
     AtomicInteger sum = new AtomicInteger(0);
     @Override
     public String say(String msg) {
-        String recieveMsg = msg+sum.incrementAndGet();
-        System.out.println(recieveMsg);
-        return recieveMsg;
+        System.out.println("收到第"+sum.incrementAndGet()+"条消息，msg:"+msg);
+        return "服务回复："+msg;
     }
 }
