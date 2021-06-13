@@ -31,7 +31,7 @@ public class NettyClient{
     public Channel channel;
 
     /**
-     * 客户端长连接并使用连接池，channel可能复用，发送数据和接受数据异步
+     * 客户端长连接并使用连接池，channel可能复用，且发送数据和接受数据异步，所以请求需要同步
      *
      * @param req
      * @return
@@ -43,9 +43,12 @@ public class NettyClient{
             initChannel();
         }
         CountDownLatch latch = new CountDownLatch(1);
+        //请求缓存起来
         ChannelUtils.putCallback2DataMap(channel, req.getRequestId(), latch);
         channel.writeAndFlush(req);//sync()
+        //等待回复
         latch.await();
+        //返回结果
         return ResultMap.getMap().remove(req.getRequestId());
     }
 

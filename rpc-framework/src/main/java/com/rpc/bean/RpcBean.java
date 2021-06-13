@@ -10,7 +10,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 
 /**
- * Demo class
+ * 所有实现了BeanDefinitionRegistryPostProcessor接口的bean，其postProcessBeanDefinitionRegistry方法都会调用，然后再调用其postProcessBeanFactory方法
  *
  * @author wanglei
  * @date create in 15:18 2018/7/10
@@ -18,13 +18,23 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 public class RpcBean implements BeanDefinitionRegistryPostProcessor {
 
 
+    /**
+     * 该方法的实现中，主要用来对bean定义做一些改变
+     * @param beanFactory
+     * @throws BeansException
+     */
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
     }
 
+    /**
+     * 该方法用来注册更多的bean到spring容器中
+     * @param beanDefinitionRegistry
+     * @throws BeansException
+     */
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
-        // 需要被代理的接口
+        //todo 需要被代理的接口，暂时写死，可以改成读取配置
         Class<?> cls = HelloService.class;
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(cls);
         GenericBeanDefinition definition = (GenericBeanDefinition) builder.getRawBeanDefinition();
