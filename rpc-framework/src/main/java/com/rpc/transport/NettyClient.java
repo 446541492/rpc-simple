@@ -45,7 +45,7 @@ public class NettyClient{
         CountDownLatch latch = new CountDownLatch(1);
         //请求缓存起来
         ChannelUtils.putCallback2DataMap(channel, req.getRequestId(), latch);
-        channel.writeAndFlush(req);//sync()
+        channel.writeAndFlush(req);
         //等待回复
         latch.await();
         //返回结果
