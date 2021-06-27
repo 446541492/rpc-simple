@@ -70,7 +70,7 @@ public class NettyClient{
                             channel.pipeline()
                                     .addLast(new RpcEncoder()) // 将 RPC 请求进行编码（为了发送请求）
                                     .addLast(new RpcDecoder()) // 将 RPC 响应进行解码（为了处理响应）
-                                    .addLast(new ReadTimeoutHandler(5))//超时handler 5s没有交互，就会关闭channel
+//                                    .addLast(new ReadTimeoutHandler(5))//超时handler 5s没有交互，就会关闭channel
                                     .addLast(new RpcResHandler()); // 使用 RpcClient 发送 RPC 请求
                         }
                     })

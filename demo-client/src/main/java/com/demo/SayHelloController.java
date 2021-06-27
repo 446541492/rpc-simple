@@ -1,6 +1,7 @@
 package com.demo;
 
 
+import com.demo.model.UserEntity;
 import com.demo.service.HelloService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,7 @@ public class SayHelloController {
     /**
      * 根据uuid获取用户或客服昵称，头像列表
      * 
-     * @param ids
+     * @param msg
      * @return
      */
     @GetMapping("say")
@@ -25,4 +26,11 @@ public class SayHelloController {
         return service.say(msg);
     }
 
+    @GetMapping("userSay")
+    public UserEntity userSay(@RequestParam("msg") String msg) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setName(msg);
+        userEntity = service.userSay(userEntity);
+        return userEntity;
+    }
 }

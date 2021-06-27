@@ -1,5 +1,7 @@
 package com.demo.service;
 
+import com.demo.model.UserEntity;
+
 /**
  * Demo class
  *
@@ -8,4 +10,6 @@ package com.demo.service;
  */
 public interface HelloService {
     String say(String msg);
+
+    UserEntity userSay(UserEntity userEntity);
 }
