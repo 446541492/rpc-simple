@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 客户端请求缓存
+ * 客户端请求缓存，channel
  *
  * @author wanglei
  * @date create in 14:40 2018/7/11
