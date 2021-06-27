@@ -16,8 +16,6 @@ public class SayHelloController {
     @Autowired
     HelloService service;
     /**
-     * 根据uuid获取用户或客服昵称，头像列表
-     * 
      * @param msg
      * @return
      */

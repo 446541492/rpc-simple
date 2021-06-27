@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Demo class
+ * 客户端请求缓存
  *
  * @author wanglei
  * @date create in 14:40 2018/7/11
