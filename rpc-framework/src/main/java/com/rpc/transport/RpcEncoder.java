@@ -6,7 +6,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
- * 自定义协议编码  网络传输（网络协议是基于二进制的，内存中的参数的值要序列化成二进制的形式）
+ * 自定义协议编码（消息头和消息体）与序列化
+ * 网络传输（网络协议是基于二进制的，内存中的参数的值要序列化成二进制的形式）
  * 1.无法跨语言。这应该是java序列化最致命的问题了。
  * 由于java序列化是java内部私有的协议，其他语言不支持，导致别的语言无法反序列化，这严重阻碍了它的应用。
  * 关于跨语言问题，也就是对象传输，一般都采用json字符串。
